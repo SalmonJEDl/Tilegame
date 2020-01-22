@@ -30,25 +30,34 @@ class State(object):
             
             
     def getDist(self):
-        boardgrid = self.gridify(self.value)
-        goalgrid = self.gridify(self.goal)
+        """"Calculates the distance to the goal state"""
+        
         if self.value == self.goal:
             return 0
         distance = 0
         
+        if  self.width == 3:
+            for i in range(len(self.goal)):
+                tile = self.goal[i]
+                distance += abs(i - self.value.index(tile))
+            return distance
+        
+        else:
+            boardgrid = self.gridify(self.value)
+            goalgrid = self.gridify(self.goal)
         for k in range(0, self.width-2):
             if boardgrid[k] == goalgrid[k]:
                 self.current_row += 1
             else:
                 break
         
-        for i in range(0, self.width):
+        """for i in range(0, self.width):
             for j in range(self.current_row, self.width):
                 try:
                     x = boardgrid[j].index(goalgrid[self.current_row][i])
                 except:
                     continue
-                distance += abs(self.current_row - j) + abs(i - x)
+                distance += abs(self.current_row - j) + abs(i - x)"""
         
         """for i in range(0,self.width):
             for j in range(0, self.width):
@@ -56,7 +65,7 @@ class State(object):
                 if goalgrid[y][x] == boardgrid[i][j]
                 tile = self.goal[i]
                 distance += abs(i-self.value.index(tile))"""
-                
+    
         return distance
             
             
@@ -122,7 +131,7 @@ class AStar():
                     if not child.dist:
                         self.path = child.path
                         break
-                    self.queue.put((child.dist, count, child))
+                    self.queue.put((child.dist + len(child.path), count, child))
         return self.path
     
     
