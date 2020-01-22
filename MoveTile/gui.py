@@ -287,8 +287,7 @@ class GameWidget(QtWidgets.QWidget):
         #self.solvelist == []:
         if self.solverlabel.isHidden():
             self.solverlabel.show()
-            solver = AStar(self.tiles.shufflelist, self.tiles.tilelist)
-            self.path = solver.solve()
+            self.path = AStar(self.tiles.shufflelist, self.tiles.tilelist).solve()
             for i in self.path:
                 move = str(i//self.level+1) + "-" + str(i%self.level+1)
                 self.moves.append(move)
@@ -296,6 +295,7 @@ class GameWidget(QtWidgets.QWidget):
             self.solverlabel.setText(self.moves[0])
             self.moves.pop(0)
         else:
+            self.solverlabel.setText("")
             self.solverlabel.hide()
             self.moves = []
             self.path = []
@@ -308,21 +308,23 @@ class GameWidget(QtWidgets.QWidget):
             return
         else:
             self.swap_tilepics(x, y)
+        
         if len(self.path)>0:
-            print(gridindex)
-            print(self.path[0])
             if gridindex == self.path[0]:
                 self.path.pop(0)
-                self.solverlabel.setText(self.moves.pop(0))
+                try:
+                    self.solverlabel.setText(self.moves.pop(0))
+                except:
+                    self.solverlabel.setText("")
             else:
                 self.path = []
                 self.moves = []
                 self.solverlabel.hide()
-
+                
         if self.tiles.won():
             self.won()
-        
-    
+            
+
         
     def mousePressEvent(self, event):
         """Calculates which tile was clicked"""
