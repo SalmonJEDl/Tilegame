@@ -18,7 +18,6 @@ class State(object):
         self. width = int(math.sqrt(len(value)))
         if parent:
             self.path = parent.path.copy()
-
             self.start = parent.start
             self.goal = parent.goal
         else:
@@ -31,7 +30,6 @@ class State(object):
             
     def getDist(self):
         """"Calculates the distance to the goal state"""
-        
         if self.value == self.goal:
             return 0
         distance = 0
@@ -70,6 +68,7 @@ class State(object):
             
             
     def gridify(self, text):
+        """Translates the given list representation into a grid"""
         grid = []
         for i in range(0, self.width):
             grid.append(text[i*self.width:(i+1)*self.width])
@@ -77,6 +76,7 @@ class State(object):
         
         
     def createChildren(self):
+        """Creates children (possible next states) from a given state"""
         empty_loc = self.value.index("*")
         
         def swap_tiles(first, second):
@@ -106,7 +106,6 @@ class State(object):
             child.path.append(empty_loc + 1)
             self.children.append(child)
             
-        
 
 class AStar():
     def __init__(self, start, goal):
@@ -133,14 +132,3 @@ class AStar():
                         break
                     self.queue.put((child.dist + len(child.path), count, child))
         return self.path
-    
-    
-    
-if __name__ == "__main__":
-    tiles = Tiles(3)
-    tiles.shuffle(50)
-    print(tiles)
-    a = AStar(tiles.shufflelist, tiles.tilelist)
-    a.solve()
-    print(a.path)
-    

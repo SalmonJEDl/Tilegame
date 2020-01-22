@@ -214,30 +214,35 @@ class GameWidget(QtWidgets.QWidget):
     
     def __init__(self, parent=None, value=4):
         QtWidgets.QWidget.__init__(self, parent)
+        
+        """Initializes game board"""
         self.level = value
         self.tiles = Tiles(self.level)
         self.tiles.shuffle(10*(self.level**2))
         
+        """Initializes solver UI representation"""
         self.solverlabel = QtWidgets.QLabel(self)
         self.solverlabel.setGeometry(0,480,480,30)
+        self.solverlabel.setAlignment(QtCore.Qt.AlignCenter)
         self.solverlabel.hide()
         self.path = []
         self.moves = []
         
+        """Initializes win screen"""
         self.winlabel = QtWidgets.QLabel(self)
         self.winlabel.setGeometry(0,480,480,30)
         pixmap = QPixmap("images/youwin.png")
         self.winlabel.setPixmap(pixmap)
         self.winlabel.hide()
+        
         self.setup_board()
         
-    def setup_board(self):
         
+    def setup_board(self):
+        """Creates QLabels for each tile picture"""
         self.labels = []
         pixpath = "images/tile"
         increment = 480 / self.tiles.gridlen
-        
-        """This loop creates a QLabel for each tile picture"""
         for i in range(0, self.tiles.gridlen**2):
             label = QtWidgets.QLabel(self)
             x, y = self.get_picloc(i)
@@ -272,7 +277,7 @@ class GameWidget(QtWidgets.QWidget):
         
     def shuffle(self):
         """Shuffles the board by calling swap functions for both the tile list
-        and the tile picture list, and undoes the winning screen"""
+        and the tile picture list, and undoes the win screen"""
         if self.isEnabled() == False:
             self.setEnabled(True)
         if self.winlabel.isHidden() == False:
@@ -282,9 +287,14 @@ class GameWidget(QtWidgets.QWidget):
             moveindex = movelist[random.randint(0, len(movelist)-1)]
             self.swap_tilepics(self.tiles.empty_at, moveindex)
             self.tiles.swap(moveindex)
+        if self.path != []:
+            self.disable_solver()
+        
         
     def solve(self):
-        #self.solvelist == []:
+        """Fetches a solution for the game or hides the current solution
+        path = solution with indexes
+        moves = solution translated into row-column form"""
         if self.solverlabel.isHidden():
             self.solverlabel.show()
             self.path = AStar(self.tiles.shufflelist, self.tiles.tilelist).solve()
@@ -292,39 +302,42 @@ class GameWidget(QtWidgets.QWidget):
                 move = str(i//self.level+1) + "-" + str(i%self.level+1)
                 self.moves.append(move)
             print(self.moves)
-            self.solverlabel.setText(self.moves[0])
-            self.moves.pop(0)
+            self.solverlabel.setText("Next move: " + self.moves.pop(0))
         else:
-            self.solverlabel.setText("")
-            self.solverlabel.hide()
-            self.moves = []
-            self.path = []
-           
+            self.disable_solver()
+            
+            
+    def disable_solver(self):
+        """Deletes solver output"""
+        self.solverlabel.setText("")
+        self.solverlabel.hide()
+        self.moves = []
+        self.path = []
+            
             
     def move(self, gridindex):
-        """Tries to move given tile"""
+        """Tries to move the given tile"""
         x, y = self.tiles.move(gridindex)
         if x == 0 and y == 0:
             return
         else:
             self.swap_tilepics(x, y)
         
+        """Solution screen implementation"""
         if len(self.path)>0:
             if gridindex == self.path[0]:
                 self.path.pop(0)
                 try:
-                    self.solverlabel.setText(self.moves.pop(0))
+                    self.solverlabel.setText("Next move: " + self.moves.pop(0))
                 except:
                     self.solverlabel.setText("")
             else:
-                self.path = []
-                self.moves = []
-                self.solverlabel.hide()
-                
+                self.disable_solver()
+        
+        """Check win condition"""
         if self.tiles.won():
             self.won()
-            
-
+        
         
     def mousePressEvent(self, event):
         """Calculates which tile was clicked"""
@@ -339,11 +352,9 @@ class GameWidget(QtWidgets.QWidget):
           
     def won(self):
         """Simple winning screen"""
-        self.solverlabel.hide()
+        self.disable_solver()
         self.winlabel.show()
         self.setDisabled(True)
-        
-        
         
         
 if __name__ == "__main__":
