@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QPixmap
 import random
-from solver import *
+from solver import AStar
 import time
 
 class Tiles():
@@ -301,7 +301,6 @@ class GameWidget(QtWidgets.QWidget):
             for i in self.path:
                 move = str(i//self.level+1) + "-" + str(i%self.level+1)
                 self.moves.append(move)
-            print(self.moves)
             self.solverlabel.setText("Next move: " + self.moves.pop(0))
         else:
             self.disable_solver()

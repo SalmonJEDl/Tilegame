@@ -1,7 +1,5 @@
 from queue import PriorityQueue
 import math
-from gui import *
-
 
 """
 value = current state of the board
