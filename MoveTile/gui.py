@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QPixmap
 import random
-from newsolver import *
+from solver import *
 import time
 
 class Tiles():
@@ -217,6 +217,13 @@ class GameWidget(QtWidgets.QWidget):
         self.level = value
         self.tiles = Tiles(self.level)
         self.tiles.shuffle(10*(self.level**2))
+        
+        self.solverlabel = QtWidgets.QLabel(self)
+        self.solverlabel.setGeometry(0,480,480,30)
+        self.solverlabel.hide()
+        self.path = []
+        self.moves = []
+        
         self.winlabel = QtWidgets.QLabel(self)
         self.winlabel.setGeometry(0,480,480,30)
         pixmap = QPixmap("images/youwin.png")
@@ -228,12 +235,12 @@ class GameWidget(QtWidgets.QWidget):
         
         self.labels = []
         pixpath = "images/tile"
+        increment = 480 / self.tiles.gridlen
         
         """This loop creates a QLabel for each tile picture"""
         for i in range(0, self.tiles.gridlen**2):
             label = QtWidgets.QLabel(self)
             x, y = self.get_picloc(i)
-            increment = 480 / self.tiles.gridlen
             label.setGeometry(x,y, increment, increment)
             if self.tiles.shufflelist[i] == "*":
                 pixmap = QPixmap("images/browntile.png")
@@ -278,18 +285,40 @@ class GameWidget(QtWidgets.QWidget):
         
     def solve(self):
         #self.solvelist == []:
-        solver = AStar(self.tiles.shufflelist, self.tiles.tilelist)
-        solver.solve()
-        path = solver.path
-        print(path)
+        if self.solverlabel.isHidden():
+            self.solverlabel.show()
+            solver = AStar(self.tiles.shufflelist, self.tiles.tilelist)
+            self.path = solver.solve()
+            for i in self.path:
+                move = str(i//self.level+1) + "-" + str(i%self.level+1)
+                self.moves.append(move)
+            print(self.moves)
+            self.solverlabel.setText(self.moves[0])
+            self.moves.pop(0)
+        else:
+            self.solverlabel.hide()
+            self.moves = []
+            self.path = []
            
             
     def move(self, gridindex):
+        """Tries to move given tile"""
         x, y = self.tiles.move(gridindex)
         if x == 0 and y == 0:
             return
         else:
             self.swap_tilepics(x, y)
+        if len(self.path)>0:
+            print(gridindex)
+            print(self.path[0])
+            if gridindex == self.path[0]:
+                self.path.pop(0)
+                self.solverlabel.setText(self.moves.pop(0))
+            else:
+                self.path = []
+                self.moves = []
+                self.solverlabel.hide()
+
         if self.tiles.won():
             self.won()
         
@@ -307,7 +336,8 @@ class GameWidget(QtWidgets.QWidget):
             
           
     def won(self):
-        """Simple winning screen"""  
+        """Simple winning screen"""
+        self.solverlabel.hide()
         self.winlabel.show()
         self.setDisabled(True)
         
